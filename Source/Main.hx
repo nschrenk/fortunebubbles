@@ -8,13 +8,105 @@ import flash.display.Sprite;
 import flash.events.MouseEvent;
 import flash.media.Sound;
 import openfl.Assets;
+import Std;
+
+enum Color {
+    Red;
+    Orange;
+    Yellow;
+    Green;
+    Blue;
+    Purple;
+    Black;
+    White;
+}
+
+
+class ColorBubbleData {
+    public var bitmapAsset:String;
+    public var bitmapPoppedAsset:String;
+
+    public function new (bitmap:String, bitmapPopped:String) {
+        this.bitmapAsset = bitmap;
+        this.bitmapPoppedAsset = bitmapPopped;
+    } 
+
+
+    public static var data:Map<Color, ColorBubbleData> = [
+        Red => new ColorBubbleData ("bubble.png", "bubble_popped.png"),
+        Orange => new ColorBubbleData ("bubble.png", "bubble_popped.png"),
+        Yellow => new ColorBubbleData ("bubble.png", "bubble_popped.png"),
+        Green => new ColorBubbleData ("bubble.png", "bubble_popped.png"),
+        Blue => new ColorBubbleData ("bubble.png", "bubble_popped.png"),
+        Purple => new ColorBubbleData ("bubble.png", "bubble_popped.png"),
+        Black => new ColorBubbleData ("bubble.png", "bubble_popped.png"),
+        White => new ColorBubbleData ("bubble.png", "bubble_popped.png"),
+    ];
+
+}
+
+typedef BubbleState = {
+    color : Color,
+    popped : Bool
+}
+ 
+class GameController {
+    var rows_ : Int;
+    var cols_ : Int;
+  
+   
+    var state_ : Array<Array<BubbleState>>;
+
+
+    public function new (rows : Int, cols : Int) {
+        this.rows_ = rows;
+        this.cols_ = cols;
+
+        this.state_ = new Array<Array<BubbleState>> ();
+
+        for (i in 0...rows) {
+           var row = new Array<BubbleState> ();
+           this.state_.push (row);
+           for (j in 0...cols) {
+                var st : BubbleState = { color : randomColor(), popped : false };
+                row.push (st);
+           }
+        }
+    }
+
+    public static function randomColor ():Color {
+        var i : Int = Std.random (8);
+        var c : Color;
+        switch (i) {
+            case 0: c = Red;
+            case 1: c = Orange;
+            case 2: c = Yellow;
+            case 3: c = Green;
+            case 4: c = Blue;
+            case 5: c = Purple;
+            case 6: c = Black;
+            case 7: c = White;
+            default: c = Red;
+        }
+        return c;
+    }
+
+    public function stateAt (col:Int, row:Int):BubbleState {
+        return this.state_[row][col]; 
+    }
+
+    public function onPopped(row:Int, col:Int) {
+        // Invoked when a bubble is popped
+    } 
+}
 
 
 class BubbleBoard extends Sprite {
-    private var rows_:Int;
-    private var columns_:Int;
-    private var bubbleArr_:Array<Array<Bubble>>;
-    private var scaling_:Float;
+    private var rows_ : Int;
+    private var columns_ : Int;
+    private var bubbleArr_ : Array<Array<Bubble>>;
+    private var scaling_ : Float;
+    private var controller_ : GameController;
 
     private function calculateScaling (rows:Int, columns:Int, bubbleWidth:Float, bubbleHeight:Float):Float {
         // Based on the stage dimensions, board size, and bubble graphic dimensions
@@ -33,15 +125,18 @@ class BubbleBoard extends Sprite {
 
         this.rows_ = rows;
         this.columns_ = columns;
+        this.controller_ = new GameController (rows, columns);
     }
 
     public function initialize () {
-        var bubbleBmData = Assets.getBitmapData ("assets/bubble.png");
-        var poppedBmData = Assets.getBitmapData ("assets/bubble_popped.png");
+        var c:Color = Red;
+        var d:ColorBubbleData = ColorBubbleData.data[c];
+        var bubbleBmData = Assets.getBitmapData ("assets/" + d.bitmapAsset);
+        var poppedBmData = Assets.getBitmapData ("assets/" + d.bitmapPoppedAsset); 
         var popSound = Assets.getSound ("assets/pop_sound.wav");
-        this.scaling_ = calculateScaling(this.rows_, this.columns_,
-                                         bubbleBmData.width,
-                                         bubbleBmData.height);
+        this.scaling_ = calculateScaling (this.rows_, this.columns_,
+                                          bubbleBmData.width,
+                                          bubbleBmData.height);
         this.scaleX = this.scaling_;
         this.scaleY = this.scaling_;
 
@@ -63,6 +158,7 @@ class BubbleBoard extends Sprite {
     }
 
 }
+
 
 class Main extends Sprite {
    
