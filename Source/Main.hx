@@ -28,21 +28,21 @@ class ColorBubbleData {
     } 
 
     public static var data:Map<Color, ColorBubbleData> = [
-        Red => new ColorBubbleData ("bubblered.png", "bubble_popped.png",
+        Red => new ColorBubbleData ("redbubble.png", "bubble_popped.png",
                                     {r: 255, g: 0, b: 0}),
-        Orange => new ColorBubbleData ("bubbleorange.png", "bubble_popped.png",
+        Orange => new ColorBubbleData ("orangebubble.png", "bubble_popped.png",
                                        {r: 255, g: 165, b: 0}),
-        Yellow => new ColorBubbleData ("bubbleyellow.png", "bubble_popped.png",
+        Yellow => new ColorBubbleData ("yellowbubble.png", "bubble_popped.png",
                                        {r: 245, g: 245, b: 0}),
-        Green => new ColorBubbleData ("bubble.png", "bubble_popped.png",
+        Green => new ColorBubbleData ("greenbubble.png", "bubble_popped.png",
                                        {r: 0, g: 230, b: 0}),
-        Blue => new ColorBubbleData ("bubbleblue.png", "bubble_popped.png",
+        Blue => new ColorBubbleData ("bluebubble.png", "bubble_popped.png",
                                        {r: 0, g: 0, b: 240}),
-        Purple => new ColorBubbleData ("bubble.png", "bubble_popped.png",
+        Purple => new ColorBubbleData ("purplebubble.png", "bubble_popped.png",
                                        {r: 220, g: 0, b: 220}),
-        Black => new ColorBubbleData ("bubble.png", "bubble_popped.png",
+        Black => new ColorBubbleData ("blackbubble.png", "bubble_popped.png",
                                        {r: 10, g: 10, b: 10}),
-        White => new ColorBubbleData ("bubble.png", "bubble_popped.png",
+        White => new ColorBubbleData ("whitebubble.png", "bubble_popped.png",
                                        {r: 255, g: 255, b: 255}),
     ];
 
@@ -61,37 +61,6 @@ class ColorBubbleData {
         bubble.setPopSound (popSound);
         bubble.setController (controller);
         return bubble;
-    }
-
-}
-
-
-class Panel extends Sprite {
-    private var textField_ : TextField;
-
-    public function new () {
-        super ();
-
-        var font = Assets.getFont ("assets/Palo_Alto_Regular.ttf");
-        var format = new TextFormat ("arial.ttf", 30, 0x7A0026);
-        textField_ = new TextField ();
-        textField_.defaultTextFormat = format;
-        textField_.embedFonts = true;
-        textField_.selectable = false;
-
-        addChild (this.textField_);
-	    this.addEventListener (Event.RENDER, this.onRender);        
-    }
-
-    public function setText (text : String) {
-        this.textField_.text = text;
-    }
-
-    public function onRender (event : Event) {
-        // neko.Lib.print ("Panel.onRender\n");
-        if (this.textField_.width != this.width) {
-            this.textField_.width = this.width;
-        }
     }
 
 }
@@ -171,7 +140,6 @@ class BubbleBoard extends Sprite {
     public function controller () : GameController {
         return this.controller_;
     }
-
 }
 
 
