@@ -1,20 +1,26 @@
 package;
 
+
 import flash.display.Bitmap;
 import flash.display.BitmapData;
 import flash.display.Sprite;
 import flash.events.MouseEvent;
 import flash.media.Sound;
 
+import GameController;
+
 
 class Bubble extends Sprite {
-    private var popped_:Bool;
-    private var bitmap_:Bitmap;
-    private var bubbleData_:BitmapData;
-    private var poppedData_:BitmapData;
-    private var popSound_:Sound;
+    private var popped_ : Bool;
+    private var bitmap_ : Bitmap;
+    private var bubbleData_ : BitmapData;
+    private var poppedData_ : BitmapData;
+    private var popSound_ : Sound;
+    private var row_ : Int;
+    private var col_ : Int;
+    private var controller_ : GameController;
  
-    public function new (bubbleData, poppedData) {
+    public function new (bubbleData, poppedData, row, col) {
 
         super ();
 
@@ -22,14 +28,21 @@ class Bubble extends Sprite {
         this.poppedData_ = poppedData;
         this.popped_ = false;
         this.popSound_ = null;
+        this.row_ = row;
+        this.col_ = col;
 
         bitmap_ = new Bitmap (bubbleData);
         addChild (bitmap_);
 
 	    this.addEventListener (MouseEvent.CLICK, this.onMouseClick);        
     }
-    public function setPopSound (popSound) {
+
+    public function setPopSound (popSound : Sound) {
         this.popSound_ = popSound;
+    }
+
+    public function setController(controller : GameController) {
+        this.controller_ = controller;
     }
 
 	public function onMouseClick (clickEvent:MouseEvent):Void {
@@ -48,6 +61,9 @@ class Bubble extends Sprite {
         addChild (bitmap_);
         if (this.popSound_ != null) {
             this.popSound_.play ();
+        }
+        if (this.controller_ != null) {
+            this.controller_.onPopped (this.row_, this.col_);
         }
     }
 }
