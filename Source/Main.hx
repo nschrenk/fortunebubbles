@@ -31,17 +31,31 @@ class ColorBubbleData {
         this.bitmapPoppedAsset = bitmapPopped;
     } 
 
-
     public static var data:Map<Color, ColorBubbleData> = [
-        Red => new ColorBubbleData ("bubble.png", "bubble_popped.png"),
-        Orange => new ColorBubbleData ("bubble.png", "bubble_popped.png"),
-        Yellow => new ColorBubbleData ("bubble.png", "bubble_popped.png"),
+        Red => new ColorBubbleData ("bubblered.png", "bubble_popped.png"),
+        Orange => new ColorBubbleData ("bubbleorange.png", "bubble_popped.png"),
+        Yellow => new ColorBubbleData ("bubbleyellow.png", "bubble_popped.png"),
         Green => new ColorBubbleData ("bubble.png", "bubble_popped.png"),
-        Blue => new ColorBubbleData ("bubble.png", "bubble_popped.png"),
+        Blue => new ColorBubbleData ("bubbleblue.png", "bubble_popped.png"),
         Purple => new ColorBubbleData ("bubble.png", "bubble_popped.png"),
         Black => new ColorBubbleData ("bubble.png", "bubble_popped.png"),
         White => new ColorBubbleData ("bubble.png", "bubble_popped.png"),
     ];
+
+    public static function forColor (color : Color) : ColorBubbleData {
+        return ColorBubbleData.data[color];
+    }
+
+    public static function createBubble(color : Color) : Bubble {
+        var d = forColor (color);
+        var bubbleBmData = Assets.getBitmapData ("assets/" + d.bitmapAsset);
+        var poppedBmData = Assets.getBitmapData ("assets/" + d.bitmapPoppedAsset); 
+        var bubble = new Bubble(bubbleBmData, poppedBmData);
+
+        var popSound = Assets.getSound ("assets/pop_sound.wav");
+        bubble.setPopSound(popSound);
+        return bubble;
+    }
 
 }
 
@@ -128,17 +142,19 @@ class BubbleBoard extends Sprite {
         this.controller_ = new GameController (rows, columns);
     }
 
+ 
     public function initialize () {
-        var c:Color = Red;
-        var d:ColorBubbleData = ColorBubbleData.data[c];
+        // This is hacky: git a bitmap for an arbitrary color to see
+        // how large the graphics are and then use that size for scaling.
+        // Hopefully all the bubble images are the same size!
+        var d = ColorBubbleData.forColor (Red);
         var bubbleBmData = Assets.getBitmapData ("assets/" + d.bitmapAsset);
-        var poppedBmData = Assets.getBitmapData ("assets/" + d.bitmapPoppedAsset); 
-        var popSound = Assets.getSound ("assets/pop_sound.wav");
         this.scaling_ = calculateScaling (this.rows_, this.columns_,
                                           bubbleBmData.width,
                                           bubbleBmData.height);
         this.scaleX = this.scaling_;
         this.scaleY = this.scaling_;
+
 
         bubbleArr_ = new Array<Array<Bubble>>();
  
@@ -147,8 +163,8 @@ class BubbleBoard extends Sprite {
             bubbleArr_.push(row);
 
             for (w in 0...columns_) {
-                var bubble = new Bubble(bubbleBmData, poppedBmData);
-                bubble.setPopSound(popSound);
+                var st = controller_.stateAt(w, h); 
+                var bubble = ColorBubbleData.createBubble (st.color);
                 bubble.x = w * bubble.width;
                 bubble.y = h * bubble.height;
                 row.push(bubble);
