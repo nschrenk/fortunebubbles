@@ -59,6 +59,13 @@ class Bubble extends Sprite {
         if (this.popped_) {
            return;
         }
+        if (this.controller_ != null) {
+            var can_pop = this.controller_.onPopped (this.row_, this.col_);
+            if (!can_pop) {
+                return;
+            }
+        }
+
         this.popped_ = true;
 
         var popped = new Bitmap (this.poppedData_);
@@ -67,9 +74,6 @@ class Bubble extends Sprite {
         addChild (bitmap_);
         if (this.popSound_ != null) {
             this.popSound_.play ();
-        }
-        if (this.controller_ != null) {
-            this.controller_.onPopped (this.row_, this.col_);
         }
     }
 }

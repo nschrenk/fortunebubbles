@@ -5,6 +5,7 @@ import flash.text.TextField;
 import flash.text.TextFieldAutoSize;
 import flash.text.TextFieldType;
 import flash.text.TextFormat;
+import openfl.Assets;
 
 class Panel extends Sprite {
     private var textField_ : TextField;
@@ -17,19 +18,21 @@ class Panel extends Sprite {
 
     public function initialize () {
         scoreWidth_ = 40;
-        // var font = Assets.getFont ("assets/Palo_Alto_Regular.ttf");
-        // var format = new TextFormat (font.fontName, 30, 0x7A0026);
-        var format = new TextFormat (null, 30, 0x5070DD);
+        var font = Assets.getFont ("assets/Palo_Alto_Regular.ttf");
+        var format = new TextFormat (font.fontName, 25, 0x5070DD);
+        // var format = new TextFormat (null, 30, 0x5070DD);
         textField_ = new TextField ();
         textField_.defaultTextFormat = format;
         textField_.embedFonts = true;
         textField_.selectable = false;
-        textField_.background = true;
-        textField_.backgroundColor = 0xaaaaaa;
-        textField_.border = true;
+        // textField_.background = true;
+        // textField_.backgroundColor = 0xaaaaaa;
+        // textField_.border = true;
         textField_.autoSize = TextFieldAutoSize.LEFT;
         textField_.type = TextFieldType.DYNAMIC;
         textField_.text = "";
+        textField_.wordWrap = true;
+        textField_.multiline = true;
 
         score_ = new TextField ();
         score_.defaultTextFormat = format;
@@ -49,9 +52,9 @@ class Panel extends Sprite {
 
     private function adjustSize () {
         // this.width = stage.stageWidth;
-        textField_.x = 5;
-        textField_.y = 0;
-        // textField_.width = 100;
+        textField_.x = 25;
+        textField_.y = 10;
+        textField_.width = 550;
 
         score_.x = 400;
         score_.y = 0;

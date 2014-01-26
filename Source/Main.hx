@@ -7,6 +7,7 @@ import GameController;
 import flash.display.Bitmap;
 import flash.display.BitmapData;
 import flash.display.BlendMode;
+import flash.display.DisplayObject;
 import flash.display.Sprite;
 import flash.geom.Point;
 import flash.geom.Rectangle;
@@ -16,6 +17,8 @@ import flash.events.MouseEvent;
 import flash.events.TouchEvent;
 import flash.media.Sound;
 import flash.text.TextField;
+import flash.text.TextFieldAutoSize;
+import flash.text.TextFieldType;
 import flash.text.TextFormat;
 import flash.utils.Timer;
 import openfl.Assets;
@@ -120,16 +123,21 @@ class BubbleBoard extends Sprite {
         this.controller_ = new GameController (this.rows_, this.columns_);
         this.scaleX = this.scaling_;
         this.scaleY = this.scaling_;
-        this.reset();
+        this.reset(true);
     }
 
-    public function reset () {
+    public function reset (first_time : Bool) {
+        if (!first_time) {
+            controller_.reset ();
+        } 
+
         var nc = this.numChildren;
         for (i in 0...nc) {
             removeChildAt(0);
         }
+
         bubbleArr_ = new Array<Array<Bubble>>();
- 
+
         for (h in 0...rows_) {
             var row = new Array<Bubble>();
             bubbleArr_.push(row);
@@ -199,14 +207,94 @@ class Instructions extends Sprite {
 
 }
 
+class FortuneDialog extends Sprite {
+    static var width_ = 400;
+    static var height_ = 600;
+    var words_ : Array<String>;
+    var title_ : String;
+    var fortune_ : String;
+    var quitFunc_ : FortuneDialog -> Void;
+
+    public function new (words : Array<String>, title : String,
+                         fortune : String, quitFunc : FortuneDialog -> Void) {
+        super ();
+
+        words_ = words;
+        title_ = title;
+        fortune_ = fortune;
+        quitFunc_ = quitFunc;
+        width = width_;
+        height = height_;
+        this.buttonMode = true;
+    }
+
+    public function centerIt (widget : DisplayObject) {
+        widget.x = (width_ - widget.width) / 2;
+        // widget.y = (height - widget.height) / 2;
+    }
+
+    public function initialize () {
+        var font = Assets.getFont ("assets/Palo_Alto_Regular.ttf");
+        var titleFormat = new TextFormat (font.fontName, 35, 0x2B3252);
+        var tt = new TextField ();
+        tt.defaultTextFormat = titleFormat;
+        tt.embedFonts = true;
+        tt.selectable = false;
+        tt.background = false;
+        tt.autoSize = TextFieldAutoSize.LEFT;
+        tt.type = TextFieldType.DYNAMIC;
+        tt.text = title_;
+        tt.x = 30;
+        tt.y = 20;
+        tt.width = width_ - 40;
+        addChild (tt);
+        centerIt (tt);
+
+        var fortuneFormat = new TextFormat (font.fontName, 25, 0x2B2D52);
+        var ft = new TextField ();
+        ft.defaultTextFormat = fortuneFormat;
+        ft.embedFonts = true;
+        ft.selectable = false;
+        ft.background = false;
+        ft.autoSize = TextFieldAutoSize.LEFT;
+        ft.type = TextFieldType.DYNAMIC;
+        ft.wordWrap = true;
+        ft.multiline = true;
+        ft.text = fortune_;
+        ft.x = 30;
+        ft.y = 200;
+        ft.width = width_ - 40;
+        ft.height = height_ - 120;
+        addChild (ft);
+        centerIt (ft);
+
+	    this.graphics.beginFill (0xDDDDFF);
+        this.graphics.drawRoundRect (0, 0, width_, height_, 8);
+	    this.graphics.beginFill (0xAACCEE);
+        this.graphics.drawRoundRect (10, 10, width_ - 20, height_ - 20, 7);
+
+        addEventListener (MouseEvent.CLICK,
+                          this.onInstructionsClicked);
+	    addEventListener (TouchEvent.TOUCH_TAP,
+                          this.onInstructionsTapped);
+    }
+
+    public function onInstructionsClicked (event : MouseEvent) {
+        quitFunc_ (this);
+    }
+
+    public function onInstructionsTapped (event : TouchEvent) {
+        quitFunc_ (this);
+    }
+}
+
 class Main extends Sprite implements GameListener {
    
     private var board_ : BubbleBoard;
     private var panel_ : Panel;
     private var background_ : Bitmap;
     private var instructions_ : Instructions;
-    private var cacheX : Float;
-    private var cacheY : Float;
+    private var drop_words_ : Array<String>;
  
     public function new () {
         super ();
@@ -227,9 +315,6 @@ class Main extends Sprite implements GameListener {
         board_.width = stage.stageWidth;
         board_.height = panelHeight;
 
-        addChild (board_); 
-        board_.initialize ();
-
         panel_ = new Panel ();
         panel_.x = 0;
         panel_.y = stage.stageHeight - panelHeight;
@@ -237,9 +322,8 @@ class Main extends Sprite implements GameListener {
         panel_.height = panelHeight;
         addChild (panel_);
         panel_.initialize();
-        panel_.setText ("Fortune Bubble!");
+        panel_.setText ("Pop 7 Bubbles To Reveal Your Fortune");
 
-        board_.controller().setListener (this);
 
         instructions_ = new Instructions ();
 	    instructions_.addEventListener (MouseEvent.CLICK,
@@ -248,6 +332,19 @@ class Main extends Sprite implements GameListener {
                                         this.onInstructionsTapped);
         addChild(instructions_);
         instructions_.initialize();
+
+    }
+
+    public function reset () {
+        drop_words_ = new Array<String> ();
+        if (board_.parent == null) {
+            addChild (board_);
+            board_.initialize ();
+            board_.controller().setListener (this);
+        } else {
+            board_.reset (false);
+            panel_.setText ("Pop 7 Bubbles To Reveal Your Fortune");
+        }
     }
 
     public function onInstructionsClicked (event : MouseEvent) {
@@ -256,6 +353,7 @@ class Main extends Sprite implements GameListener {
 	    instructions_.removeEventListener (TouchEvent.TOUCH_TAP,
                                            this.onInstructionsTapped);
         removeChild(instructions_);
+        reset();
     }
 
     public function onInstructionsTapped (event : TouchEvent) {
@@ -264,15 +362,38 @@ class Main extends Sprite implements GameListener {
 	    instructions_.removeEventListener (TouchEvent.TOUCH_TAP,
                                            this.onInstructionsTapped);
         removeChild(instructions_);
+        reset();
     }
 
     public function onPop (drop_word : String) {
-        panel_.setText (drop_word);
+        drop_words_.push (drop_word);
+        var text = "";
+        for (w in drop_words_) {
+            if (text != "") {
+                text += ", ";
+            }
+            text += w;
+        }
+        panel_.setText (text);
     }
 
     public function onGameEnd (title : String, fortune : String) {
         var chime = Assets.getSound ("assets/magic-chime-01.wav");
         chime.play ();
-        panel_.setText (title + "\n" + fortune);
+        // xxx delay this with a timer + callback or something?
+        var dialog = new FortuneDialog (drop_words_, title, fortune,
+                                    this.onFortuneDialogComplete);
+        addChild (dialog);
+        dialog.initialize();
+        dialog.x = (width - dialog.width) / 2;
+        dialog.y = (height - dialog.height) / 2;
+        // panel_.setText ("Behold Your Fortune!");
     }
+
+    public function onFortuneDialogComplete (dialog : FortuneDialog) : Void {
+        removeChild (dialog);
+        reset ();
+    }
+
+
 }

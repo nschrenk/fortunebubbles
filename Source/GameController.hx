@@ -2,19 +2,8 @@ package;
 
 import Std;
 
+import Data;
 import Panel;
-
-
-enum Color {
-    Red;
-    Orange;
-    Yellow;
-    Green;
-    Blue;
-    Purple;
-    Black;
-    White;
-}
 
 
 typedef Rgb = {
@@ -26,31 +15,74 @@ typedef Rgb = {
 
 typedef BubbleState = {
     color : Color,
-    popped : Bool
+    popped : Bool,
+    drop_word : String
+}
+
+
+interface GameListener {
+    function onPop (drop_word : String) : Void;
+    function onGameEnd (title : String, fortune : String) : Void;
 }
 
  
 class GameController {
     var rows_ : Int;
     var cols_ : Int;
+    var listener_ : GameListener;
     var state_ : Array<Array<BubbleState>>;
     var numPopped_ : Int;
-    var panel_ : Panel;
+    var score_ : Int;
 
     public function new (rows : Int, cols : Int) {
         this.rows_ = rows;
         this.cols_ = cols;
+        reset ();
+    }
+
+    public function reset () {
         this.state_ = new Array<Array<BubbleState>> ();
         this.numPopped_ = 0; 
+        this.score_ = 0;
 
-        for (i in 0...rows) {
+        var board = GameController.generateBoard (rows_ * cols_);
+        for (i in 0...rows_) {
            var row = new Array<BubbleState> ();
            this.state_.push (row);
-           for (j in 0...cols) {
-                var st : BubbleState = { color : randomColor(), popped : false };
-                row.push (st);
+           for (j in 0...cols_) {
+                row.push (board.pop ());
            }
         }
+    }
+
+    public static function generateBoard (size : Int) : Array<BubbleState> {
+        var board = new Array<BubbleState> ();
+        var colors = new Array<Color> ();
+        var drop_word_pos = new Map<Color, Int> ();
+        var num_each = Math.floor (size / 8) + 1;
+        for (c in Type.allEnums(Color)) {
+            for (i in 0...num_each) {
+                colors.push(c);
+            }
+            drop_word_pos[c] = 0;
+        }
+
+        for (i in 0...size) {
+            var idx = Std.random (colors.length);
+            var c = colors[idx];
+            var drop_word_idx = drop_word_pos[c];
+            if (drop_word_idx >= Data.drop_words[c].length) {
+                drop_word_idx = 0;
+            }
+            var drop_word = Data.drop_words[c][drop_word_idx];
+            drop_word_pos[c] = drop_word_idx + 1;
+            
+            var st : BubbleState = { color : c, popped : false,
+                                     drop_word : drop_word };
+            board.push(st);
+        }
+
+        return board;
     }
 
     public static function randomColor ():Color {
@@ -89,22 +121,46 @@ class GameController {
         return this.state_[row][col]; 
     }
 
-    public function setPanel (panel : Panel) {
-        panel_ = panel;
+    public function setListener (listener : GameListener) {
+        listener_ = listener;
     }
 
-    public function onPopped (row:Int, col:Int) {
+    public function gameEnd () {
+        trace ("gameEnd");
+        var title = "mysterious stranger";
+        var fortune = "your fortune is murky";
+        var f = Data.fortunes.get (score_);
+        if (f != null) {
+            title = f.title;
+            fortune = f.fortune;
+        }
+        listener_.onGameEnd (title, fortune);
+    }
+
+    public function playing () {
+        return this.numPopped_ < 7;
+    }
+
+    public function onPopped (row:Int, col:Int) : Bool {
         // Invoked when a bubble is popped
+        if (!playing()) {
+            return false;
+        }
         var st = stateAt (col, row);
         st.popped = true;
         this.numPopped_ += 1;
-        if (panel_ != null) {
-            panel_.updateScore (Std.string (this.numPopped_));
-            var msg = "Popped " + textForColor(st.color) + " bubble";
-            panel_.setText(msg);
+        this.score_ += Data.color_points[st.color];
+
+        trace ("onPopped row = " + row + ", col = " + col
+               + ", total popped = " + numPopped_
+               + ", score " + score_);
+
+        listener_.onPop (st.drop_word);
+
+        if (this.numPopped_ == 7) {
+            gameEnd ();
         }
-        // neko.Lib.print ("onPopped row = " + row + ", col = " + col
-        //                + ", total popped = " + this.numPopped_ + "\n");
+        return true;
     } 
 }
 
