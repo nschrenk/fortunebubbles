@@ -161,7 +161,8 @@ class BubbleBoard extends Sprite {
     }
 
     private function animate (event : TimerEvent) {
-       // xxx 
+        // xxx
+        trace ("animate");
     }
 
     public function controller () : GameController {
@@ -298,6 +299,24 @@ class Main extends Sprite implements GameListener {
  
     public function new () {
         super ();
+
+        displaySplash();
+    }
+
+    public function displaySplash() {
+        var splashData = Assets.getBitmapData("assets/splashscreen.jpg");
+        var splash = new Bitmap(splashData);
+        splash.scaleX = (stage.stageWidth / splashData.width);
+        splash.scaleY = (stage.stageHeight / splashData.height);
+        addChild(splash);
+        
+        var timer = new Timer (5000, 1);
+        timer.addEventListener (TimerEvent.TIMER, this.afterSplash);
+        timer.start ();
+    }
+
+    public function afterSplash(event : TimerEvent) {
+        removeChildAt (0); // splash screen bitmap
 
         var panelHeight = 80;
         var minRows = 9;
