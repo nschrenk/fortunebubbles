@@ -178,8 +178,8 @@ class Instructions extends Sprite {
 
     public function initialize() {
         var bg = new Sprite ();
-        bg.opaqueBackground = 0x333333;
-        bg.alpha = 0.5;
+        // bg.opaqueBackground = 0x333333;
+        // bg.alpha = 0.5;
         bg.width = this.width;
         bg.height = this.height;
         addChild (bg);

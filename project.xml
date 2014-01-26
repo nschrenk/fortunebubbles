@@ -8,10 +8,10 @@
 	
 	<haxelib name="openfl" />
 	
-	<assets path="Assets" rename="assets" exclude="openfl.svg" />
-	<icon path="Assets/openfl.svg" />
+	<assets path="Assets" rename="assets" exclude="icon.png" />
+	<icon path="Assets/icon.png" />
 
 	<window width="0" height="0" orientation="portrait" if="mobile"/>
-	<window width="640" height="800" orientation="portrait" unless="mobile"/>
+	<window width="600" height="700" orientation="portrait" unless="mobile"/>
 	
 </project>
