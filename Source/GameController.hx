@@ -1,5 +1,9 @@
 package;
 
+import Std;
+
+import Panel;
+
 
 enum Color {
     Red;
@@ -31,6 +35,7 @@ class GameController {
     var cols_ : Int;
     var state_ : Array<Array<BubbleState>>;
     var numPopped_ : Int;
+    var panel_ : Panel;
 
     public function new (rows : Int, cols : Int) {
         this.rows_ = rows;
@@ -69,11 +74,18 @@ class GameController {
         return this.state_[row][col]; 
     }
 
-    public function onPopped(row:Int, col:Int) {
+    public function setPanel (panel : Panel) {
+        panel_ = panel;
+    }
+
+    public function onPopped (row:Int, col:Int) {
         // Invoked when a bubble is popped
         var st = stateAt (col, row);
         st.popped = true;
         this.numPopped_ += 1;
+        if (panel_ != null) {
+            panel_.updateScore (Std.string (this.numPopped_));
+        }
         // neko.Lib.print ("onPopped row = " + row + ", col = " + col
         //                + ", total popped = " + this.numPopped_ + "\n");
     } 

@@ -5,6 +5,7 @@ import GameController;
 
 import flash.display.Bitmap;
 import flash.display.BitmapData;
+import flash.display.BlendMode;
 import flash.display.Sprite;
 import flash.geom.Point;
 import flash.geom.Rectangle;
@@ -73,8 +74,6 @@ class BubbleBoard extends Sprite {
     private var columns_ : Int;
     private var bubbleArr_ : Array<Array<Bubble>>;
     private var scaling_ : Float;
-    private var panelRect_ : Rectangle;
-    private var panel_ : Panel;
     private var controller_ : GameController;
 
     private function calculateScaling (bubbleWidth:Float,
@@ -83,7 +82,7 @@ class BubbleBoard extends Sprite {
         // Based on the stage dimensions, board size, and bubble graphic dimensions
         // determines how to scale the bubbles and how many actual rows and columns
         // to use.
-        var panelHeight : Int = 50;
+        var panelHeight : Int = 80;
         var sw:Float = stage.stageWidth;
         var sh:Float = stage.stageHeight - panelHeight;
         var bw:Float = sw / this.minCols_;
@@ -94,7 +93,6 @@ class BubbleBoard extends Sprite {
         this.scaling_ = scaleFactor;
         this.columns_ = Math.floor (sw / (bubbleWidth * scaleFactor));
         this.rows_ = Math.floor (sh / (bubbleHeight * scaleFactor));
-        this.panelRect_ = new Rectangle (0, sh - panelHeight, sw, panelHeight);
         // neko.Lib.print ("rows = " + rows_ + " cols = " + columns_ + "\n");
     }
 
@@ -103,6 +101,7 @@ class BubbleBoard extends Sprite {
 
         this.minRows_ = minRows;
         this.minCols_ = minCols;
+        this.blendMode = BlendMode.LAYER;
     }
 
  
@@ -130,6 +129,8 @@ class BubbleBoard extends Sprite {
                                                            controller_);
                 bubble.x = w * bubble.width;
                 bubble.y = h * bubble.height;
+                // bubble.blendMode = BlendMode.ALPHA;
+
                 row.push(bubble);
                 addChild(bubble);
             }
@@ -142,29 +143,67 @@ class BubbleBoard extends Sprite {
     }
 }
 
+class Instructions extends Sprite {
+
+    public function new () {
+        super ();
+    }
+
+    public function initialize() {
+        var bmData = Assets.getBitmapData("assets/instructionpage.jpg");
+        var bm = new Bitmap(bmData);
+        var x = 0;
+        var y = 0;
+        var wRatio:Float = (stage.stageWidth / bmData.width);
+        var hRatio:Float = (stage.stageHeight / bmData.height);
+        var scaleFactor = Math.min(wRatio, hRatio);
+        if (wRatio < hRatio) {
+            // there will be empty vertical space
+            y = Math.floor((stage.stageHeight - (scaleFactor * bmData.height)) / 2);
+        } else {
+           // there will be empty horizontal space
+            x = Math.floor((stage.stageWidth - (scaleFactor * bmData.width)) / 2);
+        }
+        bm.x = x;
+        bm.y = y; 
+        bm.scaleX = scaleFactor;
+        bm.scaleY = scaleFactor;
+
+        addChild(bm);
+    }
+
+}
 
 class Main extends Sprite {
    
     private var board_ : BubbleBoard;
     private var panel_ : Panel;
+    private var background_ : Bitmap;
+    private var instructions_ : Instructions;
     private var cacheX : Float;
     private var cacheY : Float;
  
     public function new () {
         super ();
 
+        var panelHeight = 80;
         var minRows = 9;
         var minCols = 7;
-        this.board_ = new BubbleBoard (minRows, minCols);
 
-        var panelHeight = 50;
-        this.board_.x = 0;
-        this.board_.y = 0;
-        this.board_.width = stage.stageWidth;
-        this.board_.height = panelHeight;
+        var bgData = Assets.getBitmapData("assets/background1.jpg");
+        background_ = new Bitmap(bgData);
+        background_.scaleX = (stage.stageWidth / bgData.width);
+        background_.scaleY = ((stage.stageHeight - panelHeight) / bgData.height);
+        addChild(background_);
 
-        addChild (this.board_); 
-        this.board_.initialize ();
+        board_ = new BubbleBoard (minRows, minCols);
+        board_.x = 0;
+        board_.y = 0;
+        board_.width = stage.stageWidth;
+        board_.height = panelHeight;
+
+        addChild (board_); 
+        board_.initialize ();
 
         panel_ = new Panel ();
         panel_.x = 0;
@@ -173,34 +212,20 @@ class Main extends Sprite {
         panel_.height = panelHeight;
         panel_.setText ("Fortune Bubble!");
         addChild (panel_);
-        // neko.Lib.print ("panel rect = " + panel_.x + ", " + panel_.y + ", " + panel_.width + ", " + panel_.height + "\n");
 
-        // neko.Lib.print ("stage width =" + stage.stageWidth + " height = " + stage.stageHeight + "\n");
 
-        // stage.addEventListener (MouseEvent.MOUSE_DOWN, stage_onMouseDown);
+        board_.controller().setPanel (panel_);
+
+        instructions_ = new Instructions ();
+	    instructions_.addEventListener (MouseEvent.CLICK, this.onInstructionsClicked);
+        addChild(instructions_);
+        instructions_.initialize();
+    }
+
+    public function onInstructionsClicked(event : MouseEvent) {
+        instructions_.removeEventListener (MouseEvent.CLICK, this.onInstructionsClicked); 
+        removeChild(instructions_);
+            
     }
     
-    private function stage_onMouseDown (event:MouseEvent):Void {
-        cacheX = event.stageX;
-        cacheY = event.stageY;
-
-        stage.addEventListener (MouseEvent.MOUSE_MOVE, stage_onMouseMove);
-        stage.addEventListener (MouseEvent.MOUSE_UP, stage_onMouseUp);
-    }
-
-
-    private function stage_onMouseMove (event:MouseEvent):Void {
-        // xxx
-    }
-
-
-    private function stage_onMouseUp (event:MouseEvent):Void {
-        // if (Destination.hitTestPoint (event.stageX, event.stageY)) {
-        //    Actuate.tween (Logo, 1, { x: Destination.x + 5, y: Destination.y + 5 } );
-        // }
-
-        stage.removeEventListener (MouseEvent.MOUSE_MOVE, stage_onMouseMove);
-        stage.removeEventListener (MouseEvent.MOUSE_UP, stage_onMouseUp);
-    } 
-
 }
