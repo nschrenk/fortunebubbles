@@ -16,16 +16,22 @@ class Panel extends Sprite {
         scoreWidth_ = 40;
         // var font = Assets.getFont ("assets/Palo_Alto_Regular.ttf");
         // var format = new TextFormat (font.fontName, 30, 0x7A0026);
-        var format = new TextFormat ("arial.ttf", 20, 0x7A0026);
+        var format = new TextFormat (null, 30, 0x7A0026);
         textField_ = new TextField ();
         textField_.defaultTextFormat = format;
-        textField_.embedFonts = true;
+        // textField_.embedFonts = true;
         textField_.selectable = false;
+        textField_.background = true;
+        textField_.backgroundColor = 0xcccccc;
+        textField_.border = true;
 
         score_ = new TextField ();
         score_.defaultTextFormat = format;
         score_.embedFonts = true;
         score_.selectable = false;
+        score_.background = false;
+        score_.border = true;
+        score_.text = "0";
 
         this.opaqueBackground = 0x000000;
         addChild (textField_);
@@ -35,12 +41,12 @@ class Panel extends Sprite {
     private function adjustSize () {
         textField_.x = 5;
         textField_.y = 5;
-        // textField_.width = this.width - scoreWidth_;
-        // textField_.height = this.height;
-        score_.x = textField_.width - scoreWidth_;
+        textField_.width = 100;
+        // textField_.height = 40;
+        score_.x = textField_.x + 100;
         score_.y = 5;
-        // score_.width = scoreWidth_;
-        // score_.height = this.height;
+        score_.width = scoreWidth_;
+        score_.height = textField_.height;
     }
 
     public function setText (text : String) {
@@ -51,9 +57,6 @@ class Panel extends Sprite {
     public function updateScore(text : String) {
         this.score_.text = text;
         this.adjustSize();
-        neko.Lib.print ("updateScore => " + text + "\n");
-        neko.Lib.print ("\n");
-
     }
 
 }

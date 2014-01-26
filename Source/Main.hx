@@ -29,21 +29,21 @@ class ColorBubbleData {
     } 
 
     public static var data:Map<Color, ColorBubbleData> = [
-        Red => new ColorBubbleData ("redbubble.png", "bubble_popped.png",
+        Red => new ColorBubbleData ("redbubble.png", "redafterpop.png",
                                     {r: 255, g: 0, b: 0}),
-        Orange => new ColorBubbleData ("orangebubble.png", "bubble_popped.png",
+        Orange => new ColorBubbleData ("orangebubble.png", "orangeafterpop.png",
                                        {r: 255, g: 165, b: 0}),
-        Yellow => new ColorBubbleData ("yellowbubble.png", "bubble_popped.png",
+        Yellow => new ColorBubbleData ("yellowbubble.png", "yellowafterpop.png",
                                        {r: 245, g: 245, b: 0}),
-        Green => new ColorBubbleData ("greenbubble.png", "bubble_popped.png",
+        Green => new ColorBubbleData ("greenbubble.png", "greenafterpop.png",
                                        {r: 0, g: 230, b: 0}),
-        Blue => new ColorBubbleData ("bluebubble.png", "bubble_popped.png",
+        Blue => new ColorBubbleData ("bluebubble.png", "blueafterpop.png",
                                        {r: 0, g: 0, b: 240}),
-        Purple => new ColorBubbleData ("purplebubble.png", "bubble_popped.png",
+        Purple => new ColorBubbleData ("purplebubble.png", "purpleafterpop.png",
                                        {r: 220, g: 0, b: 220}),
-        Black => new ColorBubbleData ("blackbubble.png", "bubble_popped.png",
+        Black => new ColorBubbleData ("blackbubble.png", "blackafterpop.png",
                                        {r: 10, g: 10, b: 10}),
-        White => new ColorBubbleData ("whitebubble.png", "bubble_popped.png",
+        White => new ColorBubbleData ("whitebubble.png", "whiteafterpop.png",
                                        {r: 255, g: 255, b: 255}),
     ];
 
@@ -150,6 +150,13 @@ class Instructions extends Sprite {
     }
 
     public function initialize() {
+        var bg = new Sprite ();
+        bg.opaqueBackground = 0x333333;
+        bg.alpha = 0.5;
+        bg.width = this.width;
+        bg.height = this.height;
+        addChild (bg);
+
         var bmData = Assets.getBitmapData("assets/instructionpage.jpg");
         var bm = new Bitmap(bmData);
         var x = 0;
