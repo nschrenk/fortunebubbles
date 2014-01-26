@@ -232,7 +232,6 @@ class Main extends Sprite {
     public function onInstructionsClicked(event : MouseEvent) {
         instructions_.removeEventListener (MouseEvent.CLICK, this.onInstructionsClicked); 
         removeChild(instructions_);
-            
     }
     
 }

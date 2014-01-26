@@ -70,6 +70,21 @@ class GameController {
         return c;
     }
 
+    public static function textForColor (c : Color) {
+        var txt : String;
+        switch (c) {
+            case Red:       txt = "red";
+            case Orange:    txt = "orange";
+            case Yellow:    txt = "yellow";
+            case Green:     txt = "green";
+            case Blue:      txt = "blue";
+            case Purple:    txt = "purple";
+            case Black:     txt = "black";
+            case White:     txt = "white";
+        }
+        return txt;
+    }
+
     public function stateAt (col:Int, row:Int):BubbleState {
         return this.state_[row][col]; 
     }
@@ -85,6 +100,8 @@ class GameController {
         this.numPopped_ += 1;
         if (panel_ != null) {
             panel_.updateScore (Std.string (this.numPopped_));
+            var msg = "Popped " + textForColor(st.color) + " bubble";
+            panel_.setText(msg);
         }
         // neko.Lib.print ("onPopped row = " + row + ", col = " + col
         //                + ", total popped = " + this.numPopped_ + "\n");
