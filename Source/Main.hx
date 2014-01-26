@@ -1,6 +1,7 @@
 package;
 
 import Bubble;
+import Data;
 import GameController;
 
 import flash.display.Bitmap;
@@ -10,10 +11,13 @@ import flash.display.Sprite;
 import flash.geom.Point;
 import flash.geom.Rectangle;
 import flash.events.Event;
+import flash.events.TimerEvent;
 import flash.events.MouseEvent;
+import flash.events.TouchEvent;
 import flash.media.Sound;
 import flash.text.TextField;
 import flash.text.TextFormat;
+import flash.utils.Timer;
 import openfl.Assets;
 import Std;
 
@@ -35,7 +39,7 @@ class ColorBubbleData {
                                        {r: 255, g: 165, b: 0}),
         Yellow => new ColorBubbleData ("yellowbubble.png", "yellowafterpop.png",
                                        {r: 245, g: 245, b: 0}),
-        Green => new ColorBubbleData ("greenbubble.png", "greenafterpop.png",
+        Green => new ColorBubbleData ("greenbubble.png", "greenafterpop2.png",
                                        {r: 0, g: 230, b: 0}),
         Blue => new ColorBubbleData ("bluebubble.png", "blueafterpop.png",
                                        {r: 0, g: 0, b: 240}),
@@ -75,6 +79,7 @@ class BubbleBoard extends Sprite {
     private var bubbleArr_ : Array<Array<Bubble>>;
     private var scaling_ : Float;
     private var controller_ : GameController;
+    private var timer_ : Timer;
 
     private function calculateScaling (bubbleWidth:Float,
                                        bubbleHeight:Float) : Void
@@ -106,7 +111,7 @@ class BubbleBoard extends Sprite {
 
  
     public function initialize () {
-        // This is hacky: git a bitmap for an arbitrary color to see
+        // This is hacky: get a bitmap for an arbitrary color to see
         // how large the graphics are and then use that size for scaling.
         // Hopefully all the bubble images are the same size!
         var d = ColorBubbleData.forColor (Red);
@@ -115,8 +120,14 @@ class BubbleBoard extends Sprite {
         this.controller_ = new GameController (this.rows_, this.columns_);
         this.scaleX = this.scaling_;
         this.scaleY = this.scaling_;
+        this.reset();
+    }
 
-
+    public function reset () {
+        var nc = this.numChildren;
+        for (i in 0...nc) {
+            removeChildAt(0);
+        }
         bubbleArr_ = new Array<Array<Bubble>>();
  
         for (h in 0...rows_) {
@@ -135,7 +146,14 @@ class BubbleBoard extends Sprite {
                 addChild(bubble);
             }
         } 
+        
+        timer_ = new Timer (200);
+        timer_.addEventListener (TimerEvent.TIMER, this.animate);
 
+    }
+
+    private function animate (event : TimerEvent) {
+       // xxx 
     }
 
     public function controller () : GameController {
@@ -181,7 +199,7 @@ class Instructions extends Sprite {
 
 }
 
-class Main extends Sprite {
+class Main extends Sprite implements GameListener {
    
     private var board_ : BubbleBoard;
     private var panel_ : Panel;
@@ -217,21 +235,44 @@ class Main extends Sprite {
         panel_.y = stage.stageHeight - panelHeight;
         panel_.width = stage.stageWidth;
         panel_.height = panelHeight;
-        panel_.setText ("Fortune Bubble!");
         addChild (panel_);
+        panel_.initialize();
+        panel_.setText ("Fortune Bubble!");
 
-
-        board_.controller().setPanel (panel_);
+        board_.controller().setListener (this);
 
         instructions_ = new Instructions ();
-	    instructions_.addEventListener (MouseEvent.CLICK, this.onInstructionsClicked);
+	    instructions_.addEventListener (MouseEvent.CLICK,
+                                        this.onInstructionsClicked);
+	    instructions_.addEventListener (TouchEvent.TOUCH_TAP,
+                                        this.onInstructionsTapped);
         addChild(instructions_);
         instructions_.initialize();
     }
 
-    public function onInstructionsClicked(event : MouseEvent) {
-        instructions_.removeEventListener (MouseEvent.CLICK, this.onInstructionsClicked); 
+    public function onInstructionsClicked (event : MouseEvent) {
+        instructions_.removeEventListener (MouseEvent.CLICK,
+                                           this.onInstructionsClicked); 
+	    instructions_.removeEventListener (TouchEvent.TOUCH_TAP,
+                                           this.onInstructionsTapped);
         removeChild(instructions_);
     }
-    
+
+    public function onInstructionsTapped (event : TouchEvent) {
+        instructions_.removeEventListener (MouseEvent.CLICK,
+                                           this.onInstructionsClicked); 
+	    instructions_.removeEventListener (TouchEvent.TOUCH_TAP,
+                                           this.onInstructionsTapped);
+        removeChild(instructions_);
+    }
+
+    public function onPop (drop_word : String) {
+        panel_.setText (drop_word);
+    }
+
+    public function onGameEnd (title : String, fortune : String) {
+        var chime = Assets.getSound ("assets/magic-chime-01.wav");
+        chime.play ();
+        panel_.setText (title + "\n" + fortune);
+    }
 }

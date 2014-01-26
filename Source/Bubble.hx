@@ -5,6 +5,7 @@ import flash.display.Bitmap;
 import flash.display.BitmapData;
 import flash.display.Sprite;
 import flash.events.MouseEvent;
+import flash.events.TouchEvent;
 import flash.media.Sound;
 
 import GameController;
@@ -34,7 +35,8 @@ class Bubble extends Sprite {
         bitmap_ = new Bitmap (bubbleData);
         addChild (bitmap_);
 
-	    this.addEventListener (MouseEvent.CLICK, this.onMouseClick);        
+	    this.addEventListener (MouseEvent.CLICK, this.onMouseClick);
+	    this.addEventListener (TouchEvent.TOUCH_TAP, this.onTap);
     }
 
     public function setPopSound (popSound : Sound) {
@@ -46,6 +48,10 @@ class Bubble extends Sprite {
     }
 
 	public function onMouseClick (clickEvent:MouseEvent):Void {
+        this.pop ();
+	}
+
+	public function onTap (tapEvent:TouchEvent):Void {
         this.pop ();
 	}
 
